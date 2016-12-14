@@ -5,29 +5,36 @@ breed [vecinos vecino]
 
 
 globals[
-  invasores
+  total-Agricultores
+  total-Citadinos-Vecinos
+  total-Desplazados
+  total-Guerrilleros
   target
 ]
 
 guerrilleros-own[
-  buscar
-  encontrado
-  agricultor-mas-cercano
+  buscar                   ; Variable en la que se almacena el agricultor mas cercano en un radio de 60 patches
+  encontrado               ; Variable en la que se almacena el nombre de los agricultores mas cercano
+  agricultor-mas-cercano   ; Varible en la que se guarda el nombre del agricultor mas cercano
+  parar?                   ; Variable de estado que indica cuando un guerrillero debe parar de buscar agricultores
   ]
 
 desplazados-own[
-  capital
+  capital                  ; Capital con el que cuenta un Desplazado para Conseguir Vivienda
+  busqueda-lugar
+  encontrado
+  barrio-mas-cercano
 ]
 
 
 vecinos-own[
-  capital
+  capital                  ; Capital cn el cual los vecinos subsisten
   ]
 
 agricultores-own[
-  desplazado?
-  asustado
-  guerrillero-cerca
+  desplazado?              ; Variable que indica si un agricultor ha sido desplazado
+  asustado                 ; Variable en la que se almacena si existe un guerrillero cerca en un radio de 1 patch
+  guerrillero-cerca        ; Variable en la que se almacena la distancia del guerrillero cerca
   ]
 
 patches-own[
@@ -61,7 +68,7 @@ to create-agentes
 
  create-vecinos numero-citadinos [
    setxy (random (74 - 34)+ 34) (random  (116 - 22) + 22)
-   set color red
+   set color orange
    set size 1.5
   ; set capital random 1000
   ]
@@ -80,7 +87,7 @@ to create-agentes
   ]
 
 
-  create-guerrilleros (random (10 - 3) + 3)[
+  create-guerrilleros (random (10 - 5) + 5)[
     set size 1.5
     let random-zone random 2
     ifelse (random-zone = 1 ) [
@@ -92,6 +99,7 @@ to create-agentes
 
     set color red
   ]
+
 
 end
 
@@ -106,13 +114,13 @@ to comportamiento-guerrilleros
 
    if any? other turtles-here with [color = black]  ; si el guerrillero se encuentra con un agricultor le cambia su raza a desplazado
    [desplazar]
-   buscar-terrenos
+   buscar-agricultores
    ifelse any? encontrado
-   [desplazar-agricultores][]
+   [desplazar-agricultores][ fd 0]
 
 end
 
-to buscar-terrenos
+to buscar-agricultores
   set buscar agricultores in-radius 60
   set encontrado (turtle-set buscar)
 end
@@ -127,7 +135,7 @@ to desplazar-agricultores
 end
 
 to desplazar
-  ask agricultores-on patch-here [set breed desplazados] ; se cambia la raza del agricultor a desplazado
+  ask agricultores-on patch-here [set breed desplazados set color blue] ; se cambia la raza del agricultor a desplazado
 end
 ;----------------------------------------------------------------------------
 ;---------------------Comportamiento Agricultores ---------------------------
@@ -154,28 +162,62 @@ end
 ;----------------------------------------------------------------------------
 ;--------------------Comportamiento Desplazados -----------------------------
 to comportamiento-desplazados
-
-    desplazarse
+    calcular-ahorro
+    buscar-bogota
+    ifelse any? encontrado
+    [desplazarse][]
 
 end
 
+to calcular-ahorro
+  set capital random ((2000000 - 400000) + 400000)
+end
+
+to buscar-bogota
+  set busqueda-lugar patches with [pcolor = [204 182 182]]
+  set encontrado (patch-set busqueda-lugar)
+end
 
 to desplazarse
-
+  set barrio-mas-cercano min-one-of encontrado [distance myself]
+  face barrio-mas-cercano
   ;move-to one-of patches with [pcolor = [192 203 237]] Colocar la funcion que se muevan hacia la capital
   ;fd 1
 
 end
 
 
-
+;----------------------------------------------------------------------------
+;--------------------- Inicio de Simulacion ---------------------------------
 
 to go
+  actualizar-variables-globales
   repeat 1 [ask agricultores [comportamiento-agricultores fd 0.1]]
-  repeat 2 [ask guerrilleros [comportamiento-guerrilleros fd 0.2]]
-  repeat 1 [ask desplazados [comportamiento-desplazados fd 0.2]]
+
+
+  repeat 2 [
+    ask guerrilleros
+    [
+      ifelse (total-agricultores > 0)[
+      comportamiento-guerrilleros fd 0.2]
+      [set parar? true]
+
+      if (parar? = true)[fd 0]
+    ]
+    ]
+
+
+  repeat 1 [ask desplazados [comportamiento-desplazados fd 1]]
 
   tick
+end
+
+
+to actualizar-variables-globales
+  set total-Agricultores (count agricultores)
+  set total-Citadinos-Vecinos (count vecinos)
+  set total-Desplazados (count desplazados)
+  set total-Guerrilleros (count guerrilleros)
 end
 
 ;move-to one-of neighbors with[pcolor = gray ] set dinero dinero + valor
@@ -183,10 +225,10 @@ end
           ;fd 5
 @#$#@#$#@
 GRAPHICS-WINDOW
-357
-17
-1453
-822
+234
+14
+1330
+819
 -1
 -1
 6.0
@@ -272,6 +314,25 @@ NIL
 NIL
 NIL
 1
+
+PLOT
+1349
+13
+1706
+243
+Numero de Desplazados
+Tiempo
+# De Desplazados
+0.0
+50.0
+0.0
+50.0
+true
+true
+"" ""
+PENS
+"Desplazados" 1.0 0 -13345367 true "" "plot count desplazados"
+"Agricultores" 1.0 0 -7500403 true "" "plot count agricultores"
 
 @#$#@#$#@
 ## WHAT IS IT?
