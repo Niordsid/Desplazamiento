@@ -162,8 +162,9 @@ end
 
 to desplazarse
 
-  move-to one-of patches with [pcolor = [192 203 237]]
-  fd 1
+  ;move-to one-of patches with [pcolor = [192 203 237]] Colocar la funcion que se muevan hacia la capital
+  ;fd 1
+
 end
 
 
