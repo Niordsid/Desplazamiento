@@ -27,12 +27,9 @@ patches-own[
   libre?
 ]
 
-
+;------------------- Configuracion del Mundo ---------------------
 to cargar-mapa
   import-pcolors-rgb "Mapa/San_Cristobal.bmp"
-
-
-
 end
 
 
@@ -45,8 +42,6 @@ to setup
   create-agentes
 
 
-
-
   reset-ticks
 end
 
@@ -55,9 +50,6 @@ to create-agentes
  create-vecinos numero-citadinos [
    setxy (random (74 - 34)+ 34) (random  (116 - 22) + 22)
    set color red
-    ;move-to one-of patches with [(pcolor = yellow  or pcolor = yellow - 1 )and not any? other turtles-here]
-
-
   ; set capital random 1000
   ]
 
@@ -90,6 +82,37 @@ to create-agentes
 
 end
 
+;-------------------------- Simulacion ------------------------------------
+
+
+to comportamiento-guerrilleros
+   if any?  other turtles-here with [color = black][
+
+     ]
+
+
+
+
+end
+
+to comportamiento-agriculores
+    ask agricultores [
+    let guerrilleros-near count (turtles-on neighbors) with [breed = guerrilleros]
+    set desplazado? guerrilleros-near >= 1
+    ]
+    ask agricultores with [desplazado?]
+    [desplazarse]
+end
+
+
+to desplazarse
+  move-to one-of patches with [pcolor = [192 203 237]]
+  fd 1
+end
+
+
+
+
 to go
   ask turtles-on patches with[pcolor = gray][
     let din capital
@@ -119,9 +142,9 @@ end
 @#$#@#$#@
 GRAPHICS-WINDOW
 280
-57
+10
 1376
-862
+815
 -1
 -1
 6.0
@@ -169,8 +192,8 @@ SLIDER
 numero-citadinos
 numero-citadinos
 0
-572
-479
+300
+150
 1
 1
 NIL
