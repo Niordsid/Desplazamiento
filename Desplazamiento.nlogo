@@ -13,17 +13,20 @@ globals[
 ]
 
 guerrilleros-own[
-  buscar                   ; Variable en la que se almacena el agricultor mas cercano en un radio de 60 patches
-  encontrado               ; Variable en la que se almacena el nombre de los agricultores mas cercano
-  agricultor-mas-cercano   ; Varible en la que se guarda el nombre del agricultor mas cercano
-  parar?                   ; Variable de estado que indica cuando un guerrillero debe parar de buscar agricultores
+  buscar                   ; Variable en la que se almacena el agricultor mas cercano en un radio de 60 patches.
+  encontrado               ; Variable en la que se almacena el nombre de los agricultores mas cercano.
+  agricultor-mas-cercano   ; Varible en la que se guarda el nombre del agricultor mas cercano.
+  parar?                   ; Variable de estado que indica cuando un guerrillero debe parar de buscar agricultores.
   ]
 
 desplazados-own[
-  capital                  ; Capital con el que cuenta un Desplazado para Conseguir Vivienda
-  busqueda-lugar
-  encontrado
-  barrio-mas-cercano
+  con-dinero?              ; Variable que me indica si un desplazado tiene un capital
+  capital                  ; Capital con el que cuenta un Desplazado para Conseguir Vivienda.
+  busqueda-lugar           ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los desplazados.
+  encontrado               ; Variable en la que se almacenan los puntos encontrados.
+  barrio-mas-cercano       ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
+  lugar-encontrado?         ; Indica si se ha encontrado un lugar
+
 ]
 
 
@@ -83,7 +86,7 @@ to create-agentes
 
     ;move-to one-of patches with [(pcolor = gray )and not any? other turtles-here]
     set color black
-    set desplazado? false
+
   ]
 
 
@@ -135,7 +138,7 @@ to desplazar-agricultores
 end
 
 to desplazar
-  ask agricultores-on patch-here [set breed desplazados set color blue] ; se cambia la raza del agricultor a desplazado
+  ask agricultores-on patch-here [set breed desplazados set color blue set con-dinero? false set lugar-encontrado? false] ; se cambia la raza del agricultor a desplazado
 end
 ;----------------------------------------------------------------------------
 ;---------------------Comportamiento Agricultores ---------------------------
@@ -170,7 +173,10 @@ to comportamiento-desplazados
 end
 
 to calcular-ahorro
-  set capital random ((2000000 - 400000) + 400000)
+  if (con-dinero? = false)[
+   set capital random ((2000000 - 400000) + 400000)
+   set con-dinero? true
+   ]
 end
 
 to buscar-bogota
@@ -179,10 +185,13 @@ to buscar-bogota
 end
 
 to desplazarse
-  set barrio-mas-cercano min-one-of encontrado [distance myself]
-  face barrio-mas-cercano
-  ;move-to one-of patches with [pcolor = [192 203 237]] Colocar la funcion que se muevan hacia la capital
-  ;fd 1
+  if (lugar-encontrado? = false)[
+  set barrio-mas-cercano one-of encontrado  ; Se almacena el lugar hacia donde se dirigirá el desplazado.
+  set lugar-encontrado? true
+  ]
+  face barrio-mas-cercano  ; Se le indica que se mueva hacia el lugar seleccionado.
+
+
 
 end
 
@@ -192,6 +201,8 @@ end
 
 to go
   actualizar-variables-globales
+
+
   repeat 1 [ask agricultores [comportamiento-agricultores fd 0.1]]
 
 
@@ -207,7 +218,7 @@ to go
     ]
 
 
-  repeat 1 [ask desplazados [comportamiento-desplazados fd 1]]
+  repeat 1 [ask desplazados [comportamiento-desplazados fd 0.8]]
 
   tick
 end
@@ -220,9 +231,6 @@ to actualizar-variables-globales
   set total-Guerrilleros (count guerrilleros)
 end
 
-;move-to one-of neighbors with[pcolor = gray ] set dinero dinero + valor
-          ;set heading towards one-of neighbors with[pcolor = gray]
-          ;fd 5
 @#$#@#$#@
 GRAPHICS-WINDOW
 234
