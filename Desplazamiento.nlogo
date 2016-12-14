@@ -169,7 +169,7 @@ to comportamiento-desplazados
     buscar-bogota
     ifelse any? encontrado
     [desplazarse][]
-
+    fd 0.8
 end
 
 to calcular-ahorro
@@ -191,11 +191,15 @@ to desplazarse
   ]
   face barrio-mas-cercano  ; Se le indica que se mueva hacia el lugar seleccionado.
 
-
-
 end
 
+to buscar-predio
 
+
+  ;if (xcor >= barrio-mas-cercano (pxcor)) and (ycor >= 0 )[
+  ;  si se cumple la condicion he llegado a la zona, ahora debe buscar los predios, se debe crear un metodo que busque los predios los cuales pueda ocupar
+  ; ]
+end
 ;----------------------------------------------------------------------------
 ;--------------------- Inicio de Simulacion ---------------------------------
 
@@ -218,8 +222,13 @@ to go
     ]
 
 
-  repeat 1 [ask desplazados [comportamiento-desplazados fd 0.8]]
+ ask desplazados [
+   comportamiento-desplazados
+   ]
 
+ ask desplazados [
+   buscar-predio
+   ]
   tick
 end
 
