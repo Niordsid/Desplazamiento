@@ -5,11 +5,11 @@ breed [vecinos vecino]
 
 
 globals[
-  total-Agricultores
-  total-Citadinos-Vecinos
-  total-Desplazados
-  total-Guerrilleros
-  target
+  total-Agricultores       ; Variable que almacena el numero de agricultores presentes en el modelo actualmente
+  total-Citadinos-Vecinos  ; Variable que almacena el numero de vecinos presentes en el modelo actualmente
+  total-Desplazados        ; Variable que almacena el numero de desplazados presentes en el modelo actualmente
+  total-Guerrilleros       ; Variable que almacena el numero de guerrilleros presentes en el modelo actualmente
+                    ;
 ]
 
 guerrilleros-own[
@@ -25,20 +25,24 @@ desplazados-own[
   busqueda-lugar           ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los desplazados.
   encontrado               ; Variable en la que se almacenan los puntos encontrados.
   barrio-mas-cercano       ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
-  lugar-encontrado?         ; Indica si se ha encontrado un lugar
+  lugar-encontrado?        ; Indica si se ha encontrado un lugar
+  llegue-lugar?            ; Indica si el desplazado ha llegado al lugar trazado
 
 ]
+
 
 
 vecinos-own[
   capital                  ; Capital cn el cual los vecinos subsisten
   ]
 
+
 agricultores-own[
   desplazado?              ; Variable que indica si un agricultor ha sido desplazado
   asustado                 ; Variable en la que se almacena si existe un guerrillero cerca en un radio de 1 patch
   guerrillero-cerca        ; Variable en la que se almacena la distancia del guerrillero cerca
   ]
+
 
 patches-own[
   valor
@@ -70,9 +74,18 @@ end
 to create-agentes
 
  create-vecinos numero-citadinos [
-   setxy (random (74 - 34)+ 34) (random  (116 - 22) + 22)
+
+   let random-zone random 2
+
+   if (random-zone = 1)[
+   setxy (random (63 - 51)+ 51) (random  (101 - 25) + 25)]
+   if (random-zone = 0)[
+     setxy (random (73 - 39)+ 39) (random  (92 - 62) + 62)]
+
+
    set color orange
    set size 1.5
+   set pcolor yellow - 2
   ; set capital random 1000
   ]
 
@@ -138,7 +151,7 @@ to desplazar-agricultores
 end
 
 to desplazar
-  ask agricultores-on patch-here [set breed desplazados set color blue set con-dinero? false set lugar-encontrado? false] ; se cambia la raza del agricultor a desplazado
+  ask agricultores-on patch-here [set breed desplazados set color blue set con-dinero? false set lugar-encontrado? false set llegue-lugar? false] ; se cambia la raza del agricultor a desplazado
 end
 ;----------------------------------------------------------------------------
 ;---------------------Comportamiento Agricultores ---------------------------
@@ -169,7 +182,12 @@ to comportamiento-desplazados
     buscar-bogota
     ifelse any? encontrado
     [desplazarse][]
-    fd 0.8
+
+
+    ifelse (llegue-lugar? = false)
+    [
+    fd 0.8]
+    [fd 0]
 end
 
 to calcular-ahorro
@@ -188,17 +206,31 @@ to desplazarse
   if (lugar-encontrado? = false)[
   set barrio-mas-cercano one-of encontrado  ; Se almacena el lugar hacia donde se dirigirá el desplazado.
   set lugar-encontrado? true
+
   ]
-  face barrio-mas-cercano  ; Se le indica que se mueva hacia el lugar seleccionado.
+  face barrio-mas-cercano ; Se le indica que se mueva hacia el lugar seleccionado.
 
 end
 
+
 to buscar-predio
 
+  let coordinate word ("x") barrio-mas-cercano
 
-  ;if (xcor >= barrio-mas-cercano (pxcor)) and (ycor >= 0 )[
-  ;  si se cumple la condicion he llegado a la zona, ahora debe buscar los predios, se debe crear un metodo que busque los predios los cuales pueda ocupar
-  ; ]
+  let xcoord substring coordinate 8 10
+  let ycoord substring coordinate 11 13
+
+  let xcoor read-from-string xcoord
+  let ycoor read-from-string ycoord
+  ;show round (xcor) show round (ycor) show xcoor show ycoor
+
+
+  if ((round(xcor) = xcoor) and (round(ycor) = ycoor ))[
+     if (llegue-lugar? = false)[
+       set llegue-lugar? true
+     ]
+    ;si se cumple la condicion he llegado a la zona, ahora debe buscar los predios, se debe crear un metodo que busque los predios los cuales pueda ocupar
+   ]
 end
 ;----------------------------------------------------------------------------
 ;--------------------- Inicio de Simulacion ---------------------------------
@@ -228,6 +260,12 @@ to go
 
  ask desplazados [
    buscar-predio
+   ]
+
+ ask desplazados [
+   if (llegue-lugar? = true )[
+     ; metodo buscar vivienda por precio
+     ]
    ]
   tick
 end
@@ -350,6 +388,23 @@ true
 PENS
 "Desplazados" 1.0 0 -13345367 true "" "plot count desplazados"
 "Agricultores" 1.0 0 -7500403 true "" "plot count agricultores"
+
+BUTTON
+86
+276
+149
+309
+NIL
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
