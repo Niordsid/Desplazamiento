@@ -5,11 +5,12 @@ breed [vecinos vecino]
 
 
 globals[
-  total-Agricultores       ; Variable que almacena el numero de agricultores presentes en el modelo actualmente
-  total-Citadinos-Vecinos  ; Variable que almacena el numero de vecinos presentes en el modelo actualmente
-  total-Desplazados        ; Variable que almacena el numero de desplazados presentes en el modelo actualmente
-  total-Guerrilleros       ; Variable que almacena el numero de guerrilleros presentes en el modelo actualmente
-                    ;
+  total-Agricultores           ; Variable que almacena el numero de agricultores presentes en el modelo actualmente
+  total-Citadinos-Vecinos      ; Variable que almacena el numero de vecinos presentes en el modelo actualmente
+  total-Desplazados            ; Variable que almacena el numero de desplazados presentes en el modelo actualmente
+  total-Guerrilleros           ; Variable que almacena el numero de guerrilleros presentes en el modelo actualmente
+  total-Desplazados-en-Bogota  ; Numero de desplazados que van entrando a la capital
+
 ]
 
 guerrilleros-own[
@@ -213,7 +214,7 @@ to desplazarse
 end
 
 
-to buscar-predio
+to buscar-lugar-bogota
 
   let coordinate word ("x") barrio-mas-cercano
 
@@ -222,15 +223,19 @@ to buscar-predio
 
   let xcoor read-from-string xcoord
   let ycoor read-from-string ycoord
-  ;show round (xcor) show round (ycor) show xcoor show ycoor
+
 
 
   if ((round(xcor) = xcoor) and (round(ycor) = ycoor ))[
      if (llegue-lugar? = false)[
        set llegue-lugar? true
      ]
-    ;si se cumple la condicion he llegado a la zona, ahora debe buscar los predios, se debe crear un metodo que busque los predios los cuales pueda ocupar
+
    ]
+end
+
+to buscar-hogar
+
 end
 ;----------------------------------------------------------------------------
 ;--------------------- Inicio de Simulacion ---------------------------------
@@ -259,12 +264,12 @@ to go
    ]
 
  ask desplazados [
-   buscar-predio
+   buscar-lugar-bogota
    ]
 
  ask desplazados [
    if (llegue-lugar? = true )[
-     ; metodo buscar vivienda por precio
+     buscar-hogar
      ]
    ]
   tick
@@ -276,14 +281,15 @@ to actualizar-variables-globales
   set total-Citadinos-Vecinos (count vecinos)
   set total-Desplazados (count desplazados)
   set total-Guerrilleros (count guerrilleros)
+  set total-Desplazados-en-Bogota count desplazados with [llegue-lugar? = true]
 end
 
 @#$#@#$#@
 GRAPHICS-WINDOW
-234
-14
-1330
-819
+228
+10
+1324
+815
 -1
 -1
 6.0
@@ -390,11 +396,11 @@ PENS
 "Agricultores" 1.0 0 -7500403 true "" "plot count agricultores"
 
 BUTTON
-86
-276
-149
-309
-NIL
+44
+249
+166
+285
+Paso a Paso
 go
 NIL
 1
@@ -405,6 +411,46 @@ NIL
 NIL
 NIL
 1
+
+PLOT
+1353
+263
+1704
+483
+Numero de Desplazados LLegan a la Capital
+Tiempo
+# de Desplazados
+0.0
+50.0
+0.0
+50.0
+true
+true
+"" ""
+PENS
+"Desplazados" 1.0 0 -2674135 true "" "plot total-Desplazados-en-Bogota"
+
+MONITOR
+1733
+98
+1845
+143
+NIL
+total-Desplazados
+17
+1
+11
+
+MONITOR
+1721
+310
+1895
+355
+NIL
+total-Desplazados-en-Bogota
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
