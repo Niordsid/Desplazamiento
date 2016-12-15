@@ -10,6 +10,9 @@ globals[
   total-Desplazados            ; Variable que almacena el numero de desplazados presentes en el modelo actualmente
   total-Guerrilleros           ; Variable que almacena el numero de guerrilleros presentes en el modelo actualmente
   total-Desplazados-en-Bogota  ; Numero de desplazados que van entrando a la capital
+  vecinos-desplazados          ; Conocer la cantidad de Vecinos desplazados Cercanos con el fin de saber cuando me debo desplazar
+  desplazados-con-hogar        ; Variable que me permite conocer cuandos desplazados encontraron hogar
+  iniciar-vecinos              ; Variable que me permite activar el proceso de los vecinos
 
 ]
 
@@ -29,12 +32,27 @@ desplazados-own[
   lugar-encontrado?        ; Indica si se ha encontrado un lugar
   llegue-lugar?            ; Indica si el desplazado ha llegado al lugar trazado
 
+
+
+  revisar-casas
+  target-casa
+  escoger-casa
+  Hogares-encontrados?
+  llegue-hogar?
+
+
+
 ]
 
-
-
 vecinos-own[
-  capital                  ; Capital cn el cual los vecinos subsisten
+  valor                    ; Variable que indica el valor del predio el precio puede variar entre 3000000 o 300000
+  buscar-nuevo-hogar       ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los vecinos.
+  target-hogar             ; Variable en la que se almacenan los puntos encontrados.
+  escoger-nuevo-hogar      ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
+  Hogar-encontrado?        ; Indica si se ha encontrado un lugar
+  estoy-en-casa?           ; Indica si el desplazado ha llegado al lugar trazado
+
+
   ]
 
 
@@ -46,8 +64,8 @@ agricultores-own[
 
 
 patches-own[
-  valor
-  libre?
+
+  libre?                   ; Variable que indica si un predio esta libre o no
 ]
 
 
@@ -58,19 +76,7 @@ to cargar-mapa
 end
 
 
-to setup
-  ca
-  set-default-shape guerrilleros "person soldier"
-  set-default-shape agricultores "person farmer"
-  set-default-shape vecinos "person business"
-  set-default-shape desplazados "person"
 
-  cargar-mapa
-  create-agentes
-
-
-  reset-ticks
-end
 
 to create-agentes
 
@@ -86,8 +92,14 @@ to create-agentes
 
    set color orange
    set size 1.5
-   set pcolor yellow - 2
-  ; set capital random 1000
+   set Hogar-encontrado? false
+   set estoy-en-casa? false
+
+   set valor random ((3000000 - 300000) + 300000)
+   ifelse (valor >= 2100000)
+   [set pcolor yellow - 2]                                               ; yellow - 2 color de predios posibles para ocupar
+   [set pcolor brown + 2]
+
   ]
 
   create-agricultores numero-agricultores [
@@ -98,7 +110,6 @@ to create-agentes
     [
     setxy (random (174 - 152) + 152) (random (115 - 110) + 110)]
 
-    ;move-to one-of patches with [(pcolor = gray )and not any? other turtles-here]
     set color black
 
   ]
@@ -120,11 +131,38 @@ to create-agentes
 
 end
 
+to definir-predios
+
+  ask n-of random ((20 -  10) + 10) patches with[
+    pcolor = [203 218 255]][                          ; brown + 1 color de predios posibles para ocupar
+      set pcolor brown + 1
+
+      set libre? true
+      ]
+  ask patches with [pcolor = brown + 1][set libre? true]
+  ask patches with [pcolor = brown + 2][set libre? true]
+  ask patches with [pcolor = yellow - 2][set libre? false]
+end
+
+to setup
+  ca
+  set-default-shape guerrilleros "person soldier"
+  set-default-shape agricultores "person farmer"
+  set-default-shape vecinos "person business"
+  set-default-shape desplazados "person"
+  set iniciar-vecinos 0
+  set desplazados-con-hogar 0
+  cargar-mapa
+
+  create-agentes
+  definir-predios
+
+  reset-ticks
+end
+
 ;-------------------------- Simulacion ------------------------------------
 
-to mover
-  fd 1
-end
+
 ;--------------------------------------------------------------------------
 ;---------------------------Comportamiento Guerrilleros -------------------
 to comportamiento-guerrilleros
@@ -152,7 +190,7 @@ to desplazar-agricultores
 end
 
 to desplazar
-  ask agricultores-on patch-here [set breed desplazados set color blue set con-dinero? false set lugar-encontrado? false set llegue-lugar? false] ; se cambia la raza del agricultor a desplazado
+  ask agricultores-on patch-here [set breed desplazados set color blue set con-dinero? false set lugar-encontrado? false set llegue-lugar? false set Hogares-encontrados? false set llegue-hogar? false] ; se cambia la raza del agricultor a desplazado
 end
 ;----------------------------------------------------------------------------
 ;---------------------Comportamiento Agricultores ---------------------------
@@ -178,18 +216,9 @@ end
 
 ;----------------------------------------------------------------------------
 ;--------------------Comportamiento Desplazados -----------------------------
-to comportamiento-desplazados
-    calcular-ahorro
-    buscar-bogota
-    ifelse any? encontrado
-    [desplazarse][]
 
 
-    ifelse (llegue-lugar? = false)
-    [
-    fd 0.8]
-    [fd 0]
-end
+;---------------------Movimiento hacia la Ciudad ----------------------------
 
 to calcular-ahorro
   if (con-dinero? = false)[
@@ -199,32 +228,43 @@ to calcular-ahorro
 end
 
 to buscar-bogota
-  set busqueda-lugar patches with [pcolor = [204 182 182]]
-  set encontrado (patch-set busqueda-lugar)
+  set busqueda-lugar patches with [pcolor = [204 182 182]]  ; 1
+  set encontrado (patch-set busqueda-lugar) ;2
 end
 
 to desplazarse
   if (lugar-encontrado? = false)[
-  set barrio-mas-cercano one-of encontrado  ; Se almacena el lugar hacia donde se dirigirá el desplazado.
+  set barrio-mas-cercano one-of encontrado                 ; Se almacena el lugar hacia donde se dirigirá el desplazado. ;3
   set lugar-encontrado? true
-
   ]
-  face barrio-mas-cercano ; Se le indica que se mueva hacia el lugar seleccionado.
+  face barrio-mas-cercano                                  ; Se le indica que se mueva hacia el lugar seleccionado.   ;4
 
 end
 
 
-to buscar-lugar-bogota
+to desplazarce-bogota
+
+    calcular-ahorro
+    buscar-bogota
+
+    ifelse any? encontrado
+    [desplazarse][]
+
+    revisar-llegada
+
+    ifelse (llegue-lugar? = false)[fd 0.8][fd 0]
+
+
+end
+
+
+to revisar-llegada                                           ; Revisar si el desplazado llego al punto de destino
 
   let coordinate word ("x") barrio-mas-cercano
-
   let xcoord substring coordinate 8 10
   let ycoord substring coordinate 11 13
-
   let xcoor read-from-string xcoord
   let ycoor read-from-string ycoord
-
-
 
   if ((round(xcor) = xcoor) and (round(ycor) = ycoor ))[
      if (llegue-lugar? = false)[
@@ -234,7 +274,147 @@ to buscar-lugar-bogota
    ]
 end
 
+
+;---------------------------------------------------------------------------
+
+to buscar-vivienda
+  if (llegue-lugar? = true)[
+
+  buscar-hogar
+
+  ifelse any? revisar-casas
+    [desplazarse-casas][]
+
+  analizar-hogar
+
+  ifelse (llegue-hogar? = false)[fd 0.8][fd 0]
+  ]
+end
+
 to buscar-hogar
+
+    set target-casa  patches with [libre? = true]  ; 1
+
+
+    set revisar-casas (patch-set target-casa) ; 2
+
+end
+
+to desplazarse-casas
+
+    if (Hogares-encontrados? = false)[
+
+    set escoger-casa one-of revisar-casas ;3 ; revisar si se puede escoger al random y no una de esas
+    set Hogares-encontrados? true
+    ]
+
+    face escoger-casa ;4
+
+end
+
+to analizar-hogar
+  let coordinate word ("x") escoger-casa
+
+  let xcoord substring coordinate 8 10
+  let ycoord substring coordinate 11 13
+
+  let xcoor read-from-string xcoord
+  let ycoor read-from-string ycoord
+
+  if ((round(xcor) = xcoor) and (round(ycor) = ycoor ))
+  [
+
+     ifelse (pcolor = brown + 2)[
+     set pcolor black
+     set iniciar-vecinos 1
+     set desplazados-con-hogar desplazados-con-hogar + 1
+
+     ][
+     if (pcolor = brown + 1)[
+       set pcolor red
+       set desplazados-con-hogar desplazados-con-hogar + 1
+
+       ]]
+
+     if (llegue-hogar? = false)
+     [
+
+       set llegue-hogar? true
+
+    ]
+    set libre? false
+
+   ]
+
+end
+
+;----------------------------------------------------------------------------
+;----------------------Comportamiento Vecinos -------------------------------
+
+to conocer-vecino-desplazado
+  set vecinos-desplazados count (turtles-on patch-here) with [color = blue]
+
+end
+
+to buscar-nuevo-hogar-cercano
+  conocer-vecino-desplazado
+
+
+    set target-hogar  patches with [pcolor = [202 217 253]]  ; 1
+    set buscar-nuevo-hogar (patch-set target-hogar)
+
+  end
+
+to desplazarce-to-hogar
+    if (Hogar-encontrado? = false)[
+
+    set escoger-nuevo-hogar  one-of buscar-nuevo-hogar ;3 ; revisar si se puede escoger al random y no una de esas
+    set Hogar-encontrado? true
+    ]
+
+    face escoger-nuevo-hogar ;4
+
+end
+
+
+to analizar-hogar-citadino
+  let coordinate word ("x") escoger-nuevo-hogar
+
+  let xcoord substring coordinate 8 10
+  let ycoord substring coordinate 11 13
+
+  let xcoor read-from-string xcoord
+  let ycoor read-from-string ycoord
+
+  if ((round(xcor) = xcoor) and (round(ycor) = ycoor ))
+  [
+
+
+
+     if (estoy-en-casa? = false)
+     [
+
+       set estoy-en-casa? true
+
+    ]
+
+
+   ]
+
+end
+
+to desplazarce-nuevo-barrio
+
+
+    buscar-nuevo-hogar-cercano
+
+    ifelse any? buscar-nuevo-hogar
+    [desplazarce-to-hogar][]
+
+    analizar-hogar-citadino
+
+    ifelse (estoy-en-casa? = false)[fd 0.8][fd 0]
+
 
 end
 ;----------------------------------------------------------------------------
@@ -260,18 +440,16 @@ to go
 
 
  ask desplazados [
-   comportamiento-desplazados
+   desplazarce-bogota                              ; Buscar algun lugar al cual movilizarse
+   buscar-vivienda                                 ; Despues de llegar al punto de destino el desplazado busca un hogar en el cual pueda habitar
    ]
 
- ask desplazados [
-   buscar-lugar-bogota
-   ]
-
- ask desplazados [
-   if (llegue-lugar? = true )[
-     buscar-hogar
+ if (iniciar-vecinos = 1) [
+   ask vecinos [
+       desplazarce-nuevo-barrio                        ; Buscar algun lugar al cual movilizarse
      ]
    ]
+
   tick
 end
 
@@ -283,7 +461,6 @@ to actualizar-variables-globales
   set total-Guerrilleros (count guerrilleros)
   set total-Desplazados-en-Bogota count desplazados with [llegue-lugar? = true]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 228
@@ -338,7 +515,7 @@ numero-citadinos
 numero-citadinos
 0
 60
-30
+8
 1
 1
 NIL
@@ -353,7 +530,7 @@ numero-agricultores
 numero-agricultores
 0
 50
-25
+18
 1
 1
 NIL
@@ -451,6 +628,24 @@ total-Desplazados-en-Bogota
 17
 1
 11
+
+PLOT
+1349
+505
+1689
+701
+# de Desplazados que Encuentran  Hogar
+Tiempo
+# de Desplazados
+0.0
+50.0
+0.0
+50.0
+true
+true
+"" ""
+PENS
+"Desplazados" 1.0 0 -13345367 true "" "plot desplazados-con-hogar"
 
 @#$#@#$#@
 ## WHAT IS IT?
