@@ -135,12 +135,13 @@ end
 to definir-predios
 
   ask n-of random ((20 -  10) + 10) patches with[
-    pcolor = [203 218 255]][                          ; brown + 1 color de predios posibles para ocupar
-      set pcolor brown + 1
+    pcolor = [203 218 255]][                          ; brown - 1 color de predios posibles para ocupar
+
+      set pcolor brown - 1
 
       set libre? true
       ]
-  ask patches with [pcolor = brown + 1][set libre? true]
+
   ask patches with [pcolor = brown + 2][set libre? true]
   ask patches with [pcolor = yellow - 2][set libre? false]
 end
@@ -229,7 +230,7 @@ to calcular-ahorro
 end
 
 to buscar-bogota
-  set busqueda-lugar patches with [pcolor = [204 182 182]]  ; 1
+  set busqueda-lugar patches with [pcolor = brown - 1]  ; 1
   set encontrado (patch-set busqueda-lugar) ;2
 end
 
@@ -332,7 +333,7 @@ to analizar-hogar
      set predio-ocupado predio-ocupado + 1
 
      ][
-     if (pcolor = brown + 1)[
+     if (pcolor = brown - 1)[
 
 
 
