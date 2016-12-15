@@ -13,59 +13,60 @@ globals[
   vecinos-desplazados          ; Conocer la cantidad de Vecinos desplazados Cercanos con el fin de saber cuando me debo desplazar
   desplazados-con-hogar        ; Variable que me permite conocer cuandos desplazados encontraron hogar
   iniciar-vecinos              ; Variable que me permite activar el proceso de los vecinos
-
+  predio-invadido              ; Variable que me permite conocer la cantidad de predios invadidos
+  predio-ocupado               ; Variable que me permite conocer la cantidad de predios ocupados
 ]
 
 guerrilleros-own[
-  buscar                   ; Variable en la que se almacena el agricultor mas cercano en un radio de 60 patches.
-  encontrado               ; Variable en la que se almacena el nombre de los agricultores mas cercano.
-  agricultor-mas-cercano   ; Varible en la que se guarda el nombre del agricultor mas cercano.
-  parar?                   ; Variable de estado que indica cuando un guerrillero debe parar de buscar agricultores.
+  buscar                       ; Variable en la que se almacena el agricultor mas cercano en un radio de 60 patches.
+  encontrado                   ; Variable en la que se almacena el nombre de los agricultores mas cercano.
+  agricultor-mas-cercano       ; Varible en la que se guarda el nombre del agricultor mas cercano.
+  parar?                       ; Variable de estado que indica cuando un guerrillero debe parar de buscar agricultores.
   ]
 
 desplazados-own[
-  con-dinero?              ; Variable que me indica si un desplazado tiene un capital
-  capital                  ; Capital con el que cuenta un Desplazado para Conseguir Vivienda.
-  busqueda-lugar           ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los desplazados.
-  encontrado               ; Variable en la que se almacenan los puntos encontrados.
-  barrio-mas-cercano       ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
-  lugar-encontrado?        ; Indica si se ha encontrado un lugar
-  llegue-lugar?            ; Indica si el desplazado ha llegado al lugar trazado
+  con-dinero?                  ; Variable que me indica si un desplazado tiene un capital
+  capital                      ; Capital con el que cuenta un Desplazado para Conseguir Vivienda.
+  busqueda-lugar               ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los desplazados.
+  encontrado                   ; Variable en la que se almacenan los puntos encontrados.
+  barrio-mas-cercano           ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
+  lugar-encontrado?            ; Indica si se ha encontrado un lugar
+  llegue-lugar?                ; Indica si el desplazado ha llegado al lugar trazado
 
 
 
-  revisar-casas
-  target-casa
-  escoger-casa
-  Hogares-encontrados?
-  llegue-hogar?
+  revisar-casas                ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los hogares a los que se pueden dirigir los desplazados.
+  target-casa                  ; Variable en la que se almacenan los puntos encontrados.
+  escoger-casa                 ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
+  Hogares-encontrados?         ; Indica si se ha encontrado un lugar
+  llegue-hogar?                ; Indica si el desplazado ha llegado al lugar trazado
 
 
 
 ]
 
 vecinos-own[
-  valor                    ; Variable que indica el valor del predio el precio puede variar entre 3000000 o 300000
-  buscar-nuevo-hogar       ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los vecinos.
-  target-hogar             ; Variable en la que se almacenan los puntos encontrados.
-  escoger-nuevo-hogar      ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
-  Hogar-encontrado?        ; Indica si se ha encontrado un lugar
-  estoy-en-casa?           ; Indica si el desplazado ha llegado al lugar trazado
+  valor                        ; Variable que indica el valor del predio el precio puede variar entre 3000000 o 300000
+  buscar-nuevo-hogar           ; Variable en la que se almacenan los patches que cumplen la condicion de que el color del Patch sea un valor X que representaria los puntos de llegada de los vecinos.
+  target-hogar                 ; Variable en la que se almacenan los puntos encontrados.
+  escoger-nuevo-hogar          ; Variable en la que se alamacena el punto mas cercano de los puntos encontrados.
+  Hogar-encontrado?            ; Indica si se ha encontrado un lugar
+  estoy-en-casa?               ; Indica si el desplazado ha llegado al lugar trazado
 
 
   ]
 
 
 agricultores-own[
-  desplazado?              ; Variable que indica si un agricultor ha sido desplazado
-  asustado                 ; Variable en la que se almacena si existe un guerrillero cerca en un radio de 1 patch
-  guerrillero-cerca        ; Variable en la que se almacena la distancia del guerrillero cerca
+  desplazado?                  ; Variable que indica si un agricultor ha sido desplazado
+  asustado                     ; Variable en la que se almacena si existe un guerrillero cerca en un radio de 1 patch
+  guerrillero-cerca            ; Variable en la que se almacena la distancia del guerrillero cerca
   ]
 
 
 patches-own[
 
-  libre?                   ; Variable que indica si un predio esta libre o no
+  libre?                       ; Variable que indica si un predio esta libre o no
 ]
 
 
@@ -95,7 +96,7 @@ to create-agentes
    set Hogar-encontrado? false
    set estoy-en-casa? false
 
-   set valor random ((3000000 - 300000) + 300000)
+   set valor random ((3000000 - 450000) + 450000)
    ifelse (valor >= 2100000)
    [set pcolor yellow - 2]                                               ; yellow - 2 color de predios posibles para ocupar
    [set pcolor brown + 2]
@@ -222,7 +223,7 @@ end
 
 to calcular-ahorro
   if (con-dinero? = false)[
-   set capital random ((2000000 - 400000) + 400000)
+   set capital random ((1000000 - 400000) + 400000)
    set con-dinero? true
    ]
 end
@@ -328,11 +329,18 @@ to analizar-hogar
      set pcolor black
      set iniciar-vecinos 1
      set desplazados-con-hogar desplazados-con-hogar + 1
+     set predio-ocupado predio-ocupado + 1
 
      ][
      if (pcolor = brown + 1)[
-       set pcolor red
-       set desplazados-con-hogar desplazados-con-hogar + 1
+
+
+
+       ifelse (capital <= 500000)[
+         set pcolor red
+         set predio-invadido predio-invadido + 1
+         set desplazados-con-hogar desplazados-con-hogar + 1
+         ][ set pcolor orange set desplazados-con-hogar desplazados-con-hogar + 1]
 
        ]]
 
@@ -440,13 +448,13 @@ to go
 
 
  ask desplazados [
-   desplazarce-bogota                              ; Buscar algun lugar al cual movilizarse
-   buscar-vivienda                                 ; Despues de llegar al punto de destino el desplazado busca un hogar en el cual pueda habitar
+   desplazarce-bogota                                   ; Buscar algun lugar al cual movilizarse
+   buscar-vivienda                                      ; Despues de llegar al punto de destino el desplazado busca un hogar en el cual pueda habitar
    ]
 
  if (iniciar-vecinos = 1) [
    ask vecinos [
-       desplazarce-nuevo-barrio                        ; Buscar algun lugar al cual movilizarse
+       desplazarce-nuevo-barrio                         ; Buscar algun lugar al cual movilizarse
      ]
    ]
 
@@ -556,8 +564,8 @@ NIL
 PLOT
 1349
 13
-1706
-243
+1709
+207
 Numero de Desplazados
 Tiempo
 # De Desplazados
@@ -590,10 +598,10 @@ NIL
 1
 
 PLOT
-1353
-263
-1704
-483
+1350
+215
+1708
+401
 Numero de Desplazados LLegan a la Capital
 Tiempo
 # de Desplazados
@@ -608,10 +616,10 @@ PENS
 "Desplazados" 1.0 0 -2674135 true "" "plot total-Desplazados-en-Bogota"
 
 MONITOR
-1733
-98
-1845
-143
+1724
+91
+1836
+136
 NIL
 total-Desplazados
 17
@@ -619,10 +627,10 @@ total-Desplazados
 11
 
 MONITOR
-1721
-310
-1895
-355
+1720
+271
+1894
+316
 NIL
 total-Desplazados-en-Bogota
 17
@@ -630,10 +638,10 @@ total-Desplazados-en-Bogota
 11
 
 PLOT
-1349
-505
-1689
-701
+1352
+410
+1710
+604
 # de Desplazados que Encuentran  Hogar
 Tiempo
 # de Desplazados
@@ -646,6 +654,25 @@ true
 "" ""
 PENS
 "Desplazados" 1.0 0 -13345367 true "" "plot desplazados-con-hogar"
+
+PLOT
+1352
+615
+1708
+765
+# Comportamiento predios Acupados
+Tiempo
+Numero de Predios
+0.0
+50.0
+0.0
+25.0
+true
+true
+"" ""
+PENS
+"Predios Ocupados" 1.0 0 -13840069 true "" "plot predio-ocupado"
+"Predios Invadidos" 1.0 0 -2674135 true "" "plot predio-invadido"
 
 @#$#@#$#@
 ## WHAT IS IT?
