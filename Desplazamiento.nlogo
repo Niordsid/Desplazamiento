@@ -404,7 +404,7 @@ to analizar-hogar-citadino
      [
 
        set estoy-en-casa? true
-
+       set pcolor magenta + 1
     ]
 
 
