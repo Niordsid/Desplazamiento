@@ -135,9 +135,9 @@ end
 to definir-predios
 
   ask n-of random ((20 -  10) + 10) patches with[
-    pcolor = [203 218 255]][                          ; brown - 1 color de predios posibles para ocupar
+    pcolor = [204 213 193]][
 
-      set pcolor brown - 1
+      set pcolor brown - 1                                         ; brown - 1 color de predios posibles para ocupar
 
       set libre? true
       ]
@@ -329,8 +329,9 @@ to analizar-hogar
      ifelse (pcolor = brown + 2)[
      set pcolor black
      set iniciar-vecinos 1
-     set desplazados-con-hogar desplazados-con-hogar + 1
+
      set predio-ocupado predio-ocupado + 1
+     set desplazados-con-hogar desplazados-con-hogar + 1
 
      ][
      if (pcolor = brown - 1)[
@@ -341,7 +342,8 @@ to analizar-hogar
          set pcolor red
          set predio-invadido predio-invadido + 1
          set desplazados-con-hogar desplazados-con-hogar + 1
-         ][ set pcolor orange set desplazados-con-hogar desplazados-con-hogar + 1]
+         ]
+       [ set pcolor orange set desplazados-con-hogar desplazados-con-hogar + 1 set predio-ocupado predio-ocupado + 1]
 
        ]]
 
