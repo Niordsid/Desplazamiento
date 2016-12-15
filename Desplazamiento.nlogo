@@ -329,14 +329,12 @@ to analizar-hogar
      ifelse (pcolor = brown + 2)[
      set pcolor black
      set iniciar-vecinos 1
-
      set predio-ocupado predio-ocupado + 1
      set desplazados-con-hogar desplazados-con-hogar + 1
 
+
      ][
      if (pcolor = brown - 1)[
-
-
 
        ifelse (capital <= 500000)[
          set pcolor red
@@ -371,7 +369,7 @@ to buscar-nuevo-hogar-cercano
   conocer-vecino-desplazado
 
 
-    set target-hogar  patches with [pcolor = [202 217 253]]  ; 1
+    set target-hogar  patches with [pcolor = [202 217 253]]                                    ; Los vecinos se dirigen a los lotes de color [202 217 253]
     set buscar-nuevo-hogar (patch-set target-hogar)
 
   end
@@ -379,7 +377,7 @@ to buscar-nuevo-hogar-cercano
 to desplazarce-to-hogar
     if (Hogar-encontrado? = false)[
 
-    set escoger-nuevo-hogar  one-of buscar-nuevo-hogar ;3 ; revisar si se puede escoger al random y no una de esas
+    set escoger-nuevo-hogar  one-of buscar-nuevo-hogar
     set Hogar-encontrado? true
     ]
 
